@@ -1,56 +1,30 @@
-# Node.js 20 LTS base (Debian-based, stable)
-FROM node:20-bookworm
+# Use official Node.js 20 image
+FROM node:20-alpine
 
-# Avoid interactive apt prompts
-ENV DEBIAN_FRONTEND=noninteractive
+# Create app directory
+WORKDIR www/
 
-# Set working directory
-WORKDIR /www
-
-# Install Java (required for Cassandra) + utilities
-RUN apt-get update && apt-get install -y \
-    default-jdk \
-    curl \
-    tar \
-    procps \
-    && rm -rf /var/lib/apt/lists/*
-
-# Add Cassandra binaries to PATH
-ENV PATH="/opt/cassandra/bin:${PATH}"
-# ENV MAX_HEAP_SIZE=512M
-# ENV HEAP_NEWSIZE=128M
-
-# Copy Node package files first (layer caching)
+# Copy package files first (better layer caching)
 COPY www/package*.json ./
 
-# Install Node dependencies
+# Install dependencies
 RUN npm ci --omit=dev
 
-# Copy application source
+# Copy the rest of the app source
 COPY www/ .
 
-# Add normal user for increased security and reduce undefined behavior for Cassandra
-RUN useradd -s /bin/bash -d /www www
-RUN chown -R www:www /www && chown -R www:www /opt && chown -R www:www /etc
+# Build step (uncomment if you have a build script)
+# RUN npm run build
 
-USER www
+WORKDIR falcontodo
 
-# Install Apache Cassandra
-ENV CASSANDRA_VERSION=5.0.6
-RUN curl -fSL https://dlcdn.apache.org/cassandra/${CASSANDRA_VERSION}/apache-cassandra-${CASSANDRA_VERSION}-bin.tar.gz \
-    | tar -xz -C /opt \
-    && ln -s /opt/apache-cassandra-${CASSANDRA_VERSION} /opt/cassandra
+# Expose the port your app runs on
+EXPOSE 3000
 
-# Cassandra data + logs
-VOLUME ["/opt/cassandra/data"]
+# Start application
+CMD ["npm", "run", "dev"]
 
-# Expose ports
-# 3000 = Node app (change if needed)
-# 9042, 7000, 7001 = Cassandra CQL
-EXPOSE 3000 9042 7000 7001
-
-# Start Cassandra + drop into bash
-# Cassandra runs in foreground; bash stays interactive if -it is used
-CMD ["/bin/bash", "-c", "cassandra -f & exec bash"]
+# Next project "QR Code Generator"
 
 # EOF
+

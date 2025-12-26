@@ -1,0 +1,46 @@
+services:
+  cassandra:
+    image: cassandra:5.0
+    container_name: falcontodo-db
+    restart: unless-stopped
+
+    environment:
+      # VERY IMPORTANT — JVM limits
+      MAX_HEAP_SIZE: 384M
+      CASSANDRA_CONCURRENT_READS: 2
+      CASSANDRA_CONCURRENT_WRITES: 2
+      CASSANDRA_CONCURRENT_COMPACTORS: 1
+
+      # Reduce JMX & metrics noise
+      JVM_OPTS: "-Dcassandra.skip_wait_for_gossip_to_settle=0"
+
+    command: >
+      bash -c "
+      echo 'Starting Cassandra (low-memory dev mode)' &&
+      cassandra -fR
+      "
+
+    ports:
+      - "9042:9042"
+
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+  web:
+    container_name: falcontodo-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:3000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /www
+volumes:
+  cassandra-data:
