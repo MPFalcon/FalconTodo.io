@@ -14,17 +14,18 @@ services:
       # Reduce JMX & metrics noise
       JVM_OPTS: "-Dcassandra.skip_wait_for_gossip_to_settle=0"
 
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+      - ./data.cql:/docker-entrypoint-initdb.d/data.cql:ro
+
     command: >
       bash -c "
-      echo 'Starting Cassandra (low-memory dev mode)' &&
       cassandra -fR
       "
+# cqlsh -f /docker-entrypoint-initdb.d/data.cql
 
     ports:
       - "9042:9042"
-
-    volumes:
-      - cassandra-data:/var/lib/cassandra
 
     deploy:
       resources:
