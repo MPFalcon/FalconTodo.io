@@ -15,14 +15,10 @@ RUN apt-get update && apt-get install -y \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Apache Cassandra
-ENV CASSANDRA_VERSION=5.0.6
-RUN curl -fSL https://dlcdn.apache.org/cassandra/${CASSANDRA_VERSION}/apache-cassandra-${CASSANDRA_VERSION}-bin.tar.gz \
-    | tar -xz -C /opt \
-    && ln -s /opt/apache-cassandra-${CASSANDRA_VERSION} /opt/cassandra
-
 # Add Cassandra binaries to PATH
 ENV PATH="/opt/cassandra/bin:${PATH}"
+# ENV MAX_HEAP_SIZE=512M
+# ENV HEAP_NEWSIZE=128M
 
 # Copy Node package files first (layer caching)
 COPY www/package*.json ./
@@ -33,12 +29,24 @@ RUN npm ci --omit=dev
 # Copy application source
 COPY www/ .
 
+# Add normal user for increased security and reduce undefined behavior for Cassandra
+RUN useradd -s /bin/bash -d /www www
+RUN chown -R www:www /www && chown -R www:www /opt && chown -R www:www /etc
+
+USER www
+
+# Install Apache Cassandra
+ENV CASSANDRA_VERSION=5.0.6
+RUN curl -fSL https://dlcdn.apache.org/cassandra/${CASSANDRA_VERSION}/apache-cassandra-${CASSANDRA_VERSION}-bin.tar.gz \
+    | tar -xz -C /opt \
+    && ln -s /opt/apache-cassandra-${CASSANDRA_VERSION} /opt/cassandra
+
 # Cassandra data + logs
 VOLUME ["/opt/cassandra/data"]
 
 # Expose ports
 # 3000 = Node app (change if needed)
-# 9042 = Cassandra CQL
+# 9042, 7000, 7001 = Cassandra CQL
 EXPOSE 3000 9042 7000 7001
 
 # Start Cassandra + drop into bash
