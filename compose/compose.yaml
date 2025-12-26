@@ -13,6 +13,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:3000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /www
 volumes:
   cassandra_data:
-
