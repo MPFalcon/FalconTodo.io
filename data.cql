@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS falcon_todo_db.users (
 
 INSERT INTO falcon_todo_db.users
     (id, username, password, first_sign_in)
-    VALUES (0, 'admin', '7cf505c825164e97ddb64f3c55613e51530bac2da08812e12d1ab85311cfa289', toTimeStamp(now()));
+    VALUES (0, 'admin', '5b109f1ba408ea6d776f2bb8ce8af45db4bdd5e6ddefcafa73d8c7abad370c76', toTimeStamp(now()));
 
 -- EOF
