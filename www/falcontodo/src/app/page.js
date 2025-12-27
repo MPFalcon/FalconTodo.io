@@ -7,6 +7,7 @@ export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [api_call, setApiCall] = useState(false);
+  const [valCreds, setValCreds] = useState(true);
 
   const handleSetUserName = (event) => {
     setUsername(event.target.value);
@@ -44,7 +45,13 @@ export default function Home() {
       });
 
       const data = await res.json();
+      
       console.log(data);
+
+      if (data.error == "Invalid Credentials") {
+
+      }
+      setValCreds(false);
     }
     if (!api_call) return
     fetchData();
@@ -56,7 +63,12 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Log In
         </h2>
-
+        {!valCreds && 
+          <div className="text-center bg-red-500 text-white ">
+            Username or password was incorrect
+          </div>
+        }
+        
         <form className="space-y-5">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
