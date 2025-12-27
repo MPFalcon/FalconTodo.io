@@ -1,11 +1,11 @@
-import client from "../../lib/cassandra";
+import client from "@/app/lib/cassandra";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   // Receive arguments
-  const body = await req.json()
-  const { username, password } = body;
+  const { username, password } = await req.json();
 
+  console.log("Username: "+username+"; Password: "+password);
   // const username = "TEST"
   // const password = "TEST"
 
@@ -27,15 +27,21 @@ export async function POST(req) {
   // }
 
   // Define and execute the queries
-  let query = "SELECT username, password FROM falcon_todo_db.users WHERE username=\'?\' AND password=\'?\' ALLOW FILTERING;"
-  console.log('Querying Database...')
-  let first_query = await client.execute(query, [username, password], { prepare: true })
+  let query =  `
+      SELECT username, password
+      FROM users
+      WHERE username = ?
+      ALLOW FILTERING
+    `;
+  console.log('Querying Database...');
+  let first_query = await client.execute(query, [username], { prepare: true })
   .then((result) => {
-    console.log('Credentials matched!\n\nUsername: ' + result.rows[0].username + '\nPassword: ' + result.rows[0].password);
     const data = result.rows.map(row => ({
       username: row.username.toString(),     // UUID → string
       password: row.password.toString()
     }));
+    console.log(data);
+    // console.log('Credentials matched!\n\nUsername: ' + data[0].username + '\nPassword: ' + data[0].password);
 
     return NextResponse.json(data);
   })

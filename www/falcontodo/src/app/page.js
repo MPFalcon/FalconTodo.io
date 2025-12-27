@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 const crypto = require('node:crypto');
 
 export default function Home() {
-  let final_pass = "";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [api_call, setApiCall] = useState(false);
@@ -20,18 +19,16 @@ export default function Home() {
   const handleSubmit = (event) => {
     // Prevent default form submission
     event.preventDefault();
-
-    // Hash input password for the following
-    final_pass = crypto
-      .createHash("sha256")
-      .update(password)
-      .digest("hex");
     setApiCall(true);
   };
 
   useEffect(() => {
     async function fetchData() {
-      if (!api_call) return
+      // Hash input password for the following
+      const final_pass = crypto
+        .createHash("sha256")
+        .update(password)
+        .digest("hex");
 
       const args = {
         username: username,
@@ -49,6 +46,7 @@ export default function Home() {
       const data = await res.json();
       console.log(data);
     }
+    if (!api_call) return
     fetchData();
   }, [api_call]);
 

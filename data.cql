@@ -1,7 +1,7 @@
 CREATE KEYSPACE IF NOT EXISTS falcon_todo_db WITH REPLICATION =
 {
     'class' : 'SimpleStrategy',
-    'replication_factor' : '1'
+    'replication_factor' : 1
 };
 
 CREATE TABLE IF NOT EXISTS falcon_todo_db.users (
