@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 const crypto = require('node:crypto');
-import { validateLogIn } from './backend/users'
 
 export default function Home() {
+  let final_pass = "";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [results, setQueryResults] = useState([]);
+  const [api_call, setApiCall] = useState(false);
 
   const handleSetUserName = (event) => {
     setUsername(event.target.value);
@@ -22,15 +22,34 @@ export default function Home() {
     event.preventDefault();
 
     // Hash input password for the following
-    const final_pass = crypto
+    final_pass = crypto
       .createHash("sha256")
       .update(password)
       .digest("hex");
-
-    useEffect(() => {
-      validateLogIn(username, final_pass);
-    }, []);
+    setApiCall(true);
   };
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!api_call) return
+      const args = {
+        username: username,
+        password: final_pass
+      }
+    
+      const res = await fetch("./backend/validate-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(args),
+      });
+
+      const data = await res.json();
+      console.log(data);
+    }
+    fetchData();
+  }, [api_call]);
 
   return (
     <main className="flex justify-center">
