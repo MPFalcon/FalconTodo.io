@@ -32,12 +32,13 @@ export default function Home() {
   useEffect(() => {
     async function fetchData() {
       if (!api_call) return
+
       const args = {
         username: username,
         password: final_pass
       }
     
-      const res = await fetch("./backend/validate-login", {
+      const res = await fetch("/api/validate-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

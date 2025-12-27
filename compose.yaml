@@ -14,6 +14,11 @@ services:
       # Reduce JMX & metrics noise
       JVM_OPTS: "-Dcassandra.skip_wait_for_gossip_to_settle=0"
 
+      # Others
+      CASSANDRA_CLUSTER_NAME: "dev-cluster"
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+
     volumes:
       - cassandra-data:/var/lib/cassandra
       - ./data.cql:/docker-entrypoint-initdb.d/data.cql:ro
