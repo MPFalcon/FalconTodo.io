@@ -1,12 +1,13 @@
 'use client'
 
-import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 const crypto = require('node:crypto');
+import { validateLogIn } from './backend/users'
 
 export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [results, setQueryResults] = useState([]);
 
   const handleSetUserName = (event) => {
     setUsername(event.target.value);
@@ -20,13 +21,15 @@ export default function Home() {
     // Prevent default form submission
     event.preventDefault();
 
+    // Hash input password for the following
     const final_pass = crypto
       .createHash("sha256")
       .update(password)
       .digest("hex");
-    console.log("Password: ", final_pass);
 
-    // TODO: Handle query logic
+    useEffect(() => {
+      validateLogIn(username, final_pass);
+    }, []);
   };
 
   return (
