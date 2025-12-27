@@ -1,8 +1,15 @@
+networks:
+  cassandra-net:
+    driver: bridge
+
 services:
   cassandra:
     image: cassandra:5.0
     container_name: falcontodo-db
     restart: unless-stopped
+
+    networks:
+      - cassandra-net
 
     environment:
       # VERY IMPORTANT — JVM limits
@@ -15,12 +22,17 @@ services:
       JVM_OPTS: "-Dcassandra.skip_wait_for_gossip_to_settle=0"
 
       # Others
+      
+      CASSANDRA_START_RPC: "true"       # default
+      CASSANDRA_RPC_ADDRESS: "0.0.0.0"  # default
+      CASSANDRA_LISTEN_ADDRESS: "auto"  # default, use IP addr of container # : " CASSANDRA_BROADCAST_ADDRESS
       CASSANDRA_CLUSTER_NAME: "dev-cluster"
-      CASSANDRA_DC: datacenter1
-      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+      CASSANDRA_DC: "datacenter1"
 
     volumes:
       - cassandra-data:/var/lib/cassandra
+      - ./cassandra.yaml:/etc/cassandra/cassandra.yaml
       - ./data.cql:/docker-entrypoint-initdb.d/data.cql:ro
 
     command: >
@@ -31,6 +43,10 @@ services:
 
     ports:
       - "9042:9042"
+      - "7000:7000"
+      - "7001:7001"
+      - "7199:7199"
+      - "9160:9160"
 
     deploy:
       resources:
@@ -41,6 +57,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    networks:
+      - cassandra-net
     ports:
       - "8080:3000"
     develop:
