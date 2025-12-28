@@ -11,7 +11,7 @@ export default function Register() {
   const [api_call, setApiCall] = useState(false);
   const [valCreds, setValCreds] = useState(true);
   const [passMatch, setPassMatch] = useState(true);
-  const [fieldsFilled, setFieldsFilled] = useState(false);
+  const [fieldsFilled, setFieldsFilled] = useState(true);
 
   const handleSetUserName = (event) => {
     setUsername(event.target.value);
@@ -28,7 +28,7 @@ export default function Register() {
   const handleSubmit = (event) => {
     // Prevent default form submission
     event.preventDefault();
-    setCantSubmitAgain(true);
+    setCantSubmitAgain(false);
     if (!username || !password || !dup_password) {
       setFieldsFilled(false);
     } else {
@@ -51,7 +51,7 @@ export default function Register() {
         password: final_pass
       }
     
-      const res = await fetch("/api/register-user", {
+      const res = await fetch("/api/validate-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,13 +60,20 @@ export default function Register() {
       });
 
       const data = await res.json();
-      
-      console.log(data);
 
-      if (data.error == "Invalid Credentials") {
+      if (data.error == "Success") {
         console.log("Invalid Creda!");
         setValCreds(false);
+        return
       }
+
+      const res = await fetch("/api/register-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(args),
+      });
     }
 
     if (api_call) {

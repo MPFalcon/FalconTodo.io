@@ -15,7 +15,7 @@ export async function POST(req) {
     );
   }
 
-  // Define and execute the queries
+  // Define and execute the queries to check 
   let query =  `
       SELECT username, password
       FROM users
