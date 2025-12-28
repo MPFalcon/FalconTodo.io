@@ -60,7 +60,7 @@ export async function POST(req) {
 
   // Return OK in success case
   return NextResponse.json(
-    { error: "Invalid Credentials" },
-    { status: 400 }
+    { error: "Success" },
+    { status: 200 }
   );
 }

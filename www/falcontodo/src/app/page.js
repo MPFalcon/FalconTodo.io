@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 export default function Home() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [canSubmitAgain, setSubmitAgain] = useState(false);
   const [api_call, setApiCall] = useState(false);
   const [valCreds, setValCreds] = useState(true);
 
@@ -20,6 +21,7 @@ export default function Home() {
   const handleSubmit = (event) => {
     // Prevent default form submission
     event.preventDefault();
+    setSubmitAgain(true);
     setApiCall(true);
   };
 
@@ -49,12 +51,14 @@ export default function Home() {
       console.log(data);
 
       if (data.error == "Invalid Credentials") {
-
+        console.log("Invalid Creda!");
+        setValCreds(false);
       }
-      setValCreds(false);
     }
     if (!api_call) return
     fetchData();
+    setSubmitAgain(false);
+    setApiCall(false);
   }, [api_call]);
 
   return (
@@ -97,11 +101,12 @@ export default function Home() {
             />
           </div>
           <button
+            disabled={canSubmitAgain}
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
             onClick={handleSubmit}
           >
-            Sign In
+            {!canSubmitAgain ? "Sign In" : "Signing In..."}
           </button>
         </form>
 
