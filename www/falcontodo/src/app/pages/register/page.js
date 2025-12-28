@@ -9,9 +9,13 @@ export default function Register() {
   const [dup_password, setDupPassword] = useState("");
   const [cantSubmitAgain, setCantSubmitAgain] = useState(false);
   const [api_call, setApiCall] = useState(false);
-  const [valCreds, setValCreds] = useState(true);
-  const [passMatch, setPassMatch] = useState(true);
-  const [fieldsFilled, setFieldsFilled] = useState(true);
+  const [status_codes, setStatus] = useState({
+    user_exist: false,
+    user_registered: false,
+    user_registered_failed: false,
+    fields_filled: true,
+    pass_match: true
+  });
 
   const handleSetUserName = (event) => {
     setUsername(event.target.value);
@@ -30,9 +34,15 @@ export default function Register() {
     event.preventDefault();
     setCantSubmitAgain(false);
     if (!username || !password || !dup_password) {
-      setFieldsFilled(false);
+      setStatus((prevState) => ({
+        ...prevState,
+        fields_filled: false
+      }));
     } else {
-      setFieldsFilled(true);
+      setStatus((prevState) => ({
+        ...prevState,
+        fields_filled: true
+      }));
       setApiCall(true);
     }
   };
@@ -51,7 +61,7 @@ export default function Register() {
         password: final_pass
       }
     
-      const res = await fetch("/api/validate-user", {
+      const validation_res = await fetch("/api/validate-user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,11 +69,13 @@ export default function Register() {
         body: JSON.stringify(args),
       });
 
-      const data = await res.json();
-
-      if (data.error == "Success") {
-        console.log("Invalid Creda!");
-        setValCreds(false);
+      const validation_data = await validation_res.json();
+      if (validation_data.error == "Success") {
+        console.log("User Already Exists!");
+        setStatus((prevState) => ({
+          ...prevState,
+          user_exist: true
+        }));
         return
       }
 
@@ -74,14 +86,35 @@ export default function Register() {
         },
         body: JSON.stringify(args),
       });
+
+      const data = await res.json();
+      if (data.error == "Success") {
+        console.log("User Created!");
+        setStatus((prevState) => ({
+          ...prevState,
+          user_exist: false
+        }));
+      } else {
+        console.log("Operation Failed!");
+        setStatus((prevState) => ({
+          ...prevState,
+          user_registered_failed: true
+        }));
+      }
     }
 
     if (api_call) {
       if (password !== dup_password) {
-        setPassMatch(false);
+        setStatus((prevState) => ({
+          ...prevState,
+          pass_match: false
+        }));
       } else {
-        setPassMatch(true);
-        // fetchData();
+        setStatus((prevState) => ({
+          ...prevState,
+          pass_match: true
+        }));
+        fetchData();
       }
     }
 
@@ -95,17 +128,27 @@ export default function Register() {
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
           Register
         </h2>
-        {!valCreds && 
+        {status_codes.user_exist && 
           <div className="text-center bg-red-500 text-white ">
             User already exist
           </div>
         }
-        {!passMatch && 
+        {status_codes.user_registered && 
+          <div className="text-center bg-red-500 text-white ">
+            User registered successfully
+          </div>
+        }
+        {status_codes.user_registered_failed && 
+          <div className="text-center bg-red-500 text-white ">
+            Error Occurred: User didn't register successfully
+          </div>
+        }
+        {!status_codes.pass_match && 
           <div className="text-center bg-red-500 text-white ">
             Passwords must match
           </div>
         }
-        {!fieldsFilled && 
+        {!status_codes.fields_filled && 
           <div className="text-center bg-red-500 text-white ">
             All fields must be filled
           </div>
