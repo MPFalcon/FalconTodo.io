@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   // Receive arguments
-  let credentials_match = false;
   let res = 0;
   const { username, password } = await req.json();
 
@@ -17,25 +16,14 @@ export async function POST(req) {
 
   // Define and execute the queries to check 
   let query =  `
-      SELECT username, password
-      FROM users
-      WHERE username = ?
-      ALLOW FILTERING
+      INSERT INTO falcon_todo_db.users
+        (id, username, password, first_sign_in)
+        VALUES (uuid(), ?, ?, toTimeStamp(now()));
   `;
 
-  await client.execute(query, [username], { prepare: true })
+  await client.execute(query, [username, password], { prepare: true })
   .then((result) => {
-    const data = result.rows.map(row => ({
-      username: row.username.toString(),     // UUID → string
-      password: row.password.toString()
-    }));
-
-    data.some((entry) => {
-      if (entry.password == password) {
-        credentials_match = true;
-        return true;
-      }    
-    });
+    console.log(result);
   })
   .catch((err) => {
     console.error(err);
@@ -48,13 +36,6 @@ export async function POST(req) {
       { error: "Server Error" },
       { status: 500 }
     );
-  }
-
-  if (!credentials_match) {
-    return NextResponse.json(
-      { error: "Invalid Credentials" },
-      { status: 400 }
-    );  
   }
 
   // Return OK in success case

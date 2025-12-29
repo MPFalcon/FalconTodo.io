@@ -1,9 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 const crypto = require('node:crypto');
 
 export default function Register() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [dup_password, setDupPassword] = useState("");
@@ -11,7 +14,6 @@ export default function Register() {
   const [api_call, setApiCall] = useState(false);
   const [status_codes, setStatus] = useState({
     user_exist: false,
-    user_registered: false,
     user_registered_failed: false,
     fields_filled: true,
     pass_match: true
@@ -61,7 +63,7 @@ export default function Register() {
         password: final_pass
       }
     
-      const validation_res = await fetch("/api/validate-user", {
+      const validation_res = await fetch("/api/validate-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -71,12 +73,16 @@ export default function Register() {
 
       const validation_data = await validation_res.json();
       if (validation_data.error == "Success") {
-        console.log("User Already Exists!");
         setStatus((prevState) => ({
           ...prevState,
           user_exist: true
         }));
         return
+      } else {
+        setStatus((prevState) => ({
+          ...prevState,
+          user_exist: false
+        }));
       }
 
       const res = await fetch("/api/register-user", {
@@ -89,20 +95,19 @@ export default function Register() {
 
       const data = await res.json();
       if (data.error == "Success") {
-        console.log("User Created!");
         setStatus((prevState) => ({
           ...prevState,
-          user_exist: false
+          user_registered_failed: false
         }));
+        router.push('/');
       } else {
-        console.log("Operation Failed!");
         setStatus((prevState) => ({
           ...prevState,
           user_registered_failed: true
         }));
       }
     }
-
+    
     if (api_call) {
       if (password !== dup_password) {
         setStatus((prevState) => ({
@@ -131,11 +136,6 @@ export default function Register() {
         {status_codes.user_exist && 
           <div className="text-center bg-red-500 text-white ">
             User already exist
-          </div>
-        }
-        {status_codes.user_registered && 
-          <div className="text-center bg-red-500 text-white ">
-            User registered successfully
           </div>
         }
         {status_codes.user_registered_failed && 
