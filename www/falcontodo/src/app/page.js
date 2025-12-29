@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 const crypto = require('node:crypto');
 
 export default function Home() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [cantSubmitAgain, setCantSubmitAgain] = useState(false);
@@ -49,12 +51,12 @@ export default function Home() {
       });
 
       const data = await res.json();
-      
-      console.log(data);
 
       if (data.error == "Invalid Credentials") {
-        console.log("Invalid Creda!");
         setValCreds(false);
+      } else if (data.error == "Success") {
+        setValCreds(true);
+        router.push('/pages/home?id='+data.uuid);
       }
     }
     if (!api_call) return

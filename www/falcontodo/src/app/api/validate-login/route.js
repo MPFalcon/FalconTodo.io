@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   // Receive arguments
   let credentials_match = false;
+  let valid_user = {};
   let res = 0;
   const { username, password } = await req.json();
 
@@ -17,7 +18,7 @@ export async function POST(req) {
 
   // Define and execute the queries
   let query =  `
-      SELECT username, password
+      SELECT id, username, password
       FROM users
       WHERE username = ?
       ALLOW FILTERING
@@ -26,13 +27,15 @@ export async function POST(req) {
   await client.execute(query, [username], { prepare: true })
   .then((result) => {
     const data = result.rows.map(row => ({
-      username: row.username.toString(),     // UUID → string
+      user_id: row.id.toString(),         // UUID → string
+      username: row.username.toString(),     
       password: row.password.toString()
     }));
 
     data.some((entry) => {
       if (entry.password == password) {
         credentials_match = true;
+        valid_user = entry;
         return true;
       }    
     });
@@ -58,8 +61,9 @@ export async function POST(req) {
   }
 
   // Return OK in success case
+  console.log(valid_user);
   return NextResponse.json(
-    { error: "Success" },
+    { error: "Success", uuid: valid_user.user_id },
     { status: 200 }
   );
 }
