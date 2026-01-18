@@ -1,11 +1,12 @@
 'use client';
 
 import { UserIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useRef } from 'react';
 
 export default function Page() {
-  const test_list = [1, 2, 3, 4, 5];
+  const test_list = [1,2,3,4,5, 6, 7, 8, 9];
   const router = useRouter();
   const modalRef = useRef(null);
   const [profileClicked, setProfileClicked] = useState(false);
@@ -16,7 +17,7 @@ export default function Page() {
   
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
       <div className="flex w-full bg-white rounded-xl shadow-lg p-0 flex-row">
         <div className="flex justify-center pt-12 ml-2 pr-40">
           <p>ID: {id}</p>
@@ -60,17 +61,26 @@ export default function Page() {
           </div>
         </div>)}
       </div>
-      <div className='flex flex-row mt-5'>
-        <div className='bg-white rounded-xl shadow-lg p-5 mr-10 ml-5'>
+      <div className='flex w-full p-0 flex-row my-5 '>
+        <div className='h-100 bg-white rounded-xl shadow-lg p-5 mr-10 ml-5'>
           <p>Coming Soon...</p>
         </div>
-        <div className='flex flex-col bg-green-500/50 rounded-xl shadow-lg p-5 w-285 mr-5'>
-          {test_list.forEach(() => {
-            (<div className='flex justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
-              
-            </div>)
-          })}
-          
+        <div className='flex items-center justify-center flex-col bg-green-500/25 rounded-xl shadow-lg p-5 min-w-285 mr-5'>
+          <div className='flex justify-center p-5 mb-10'>
+            <button onClick={() => setProfileClicked(true)} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white mr-100">
+              <PlusIcon className="h-5 w-5 text-gray-600" />
+              <span className="text-sm font-medium">Add Item</span>
+            </button>
+            <button onClick={() => setProfileClicked(true)} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white">
+              <MinusIcon className="h-5 w-5 text-gray-600" />
+              <span className="text-sm font-medium">Remove Item</span>
+            </button>
+          </div>
+          {test_list.map((num) => (
+            <div key={num} className='flex justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
+              <p>{num}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
