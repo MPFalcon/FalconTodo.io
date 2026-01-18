@@ -56,7 +56,7 @@ export default function Home() {
         setValCreds(false);
       } else if (data.error == "Success") {
         setValCreds(true);
-        router.push('/pages/home?id='+data.uuid);
+        router.push('/pages/home?id='+data.uuid+'&username='+data.username);
       }
     }
     if (!api_call) return
