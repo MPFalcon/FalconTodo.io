@@ -8,8 +8,13 @@ import { useState, useRef } from 'react';
 export default function Page() {
   const test_list = [1,2,3,4,5, 6, 7, 8, 9];
   const router = useRouter();
-  const modalRef = useRef(null);
-  const [profileClicked, setProfileClicked] = useState(false);
+  const modalProfileRef = useRef(null);
+  const modalNewTaskRef = useRef(null);
+  const 
+  const [modelClicked, setProfileClicked] = useState({
+    profile: false,
+    new_task: true,
+  });
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
   const username = searchParams.get('username');
@@ -35,7 +40,7 @@ export default function Page() {
         </div>
         {profileClicked && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div
-            ref={modalRef}
+            ref={modalProfileRef}
             className="bg-white rounded-lg shadow-lg p-6 w-96"
           >
             <h2 className="text-3xl font-bold mb-4">Profile</h2>
@@ -51,7 +56,7 @@ export default function Page() {
             </button>
             <button
               onClick={() => {
-                modalRef.current.remove();
+                modalProfileRef.current.remove();
                 setProfileClicked(false);
               }}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
@@ -71,6 +76,25 @@ export default function Page() {
               <PlusIcon className="h-5 w-5 text-gray-600" />
               <span className="text-sm font-medium">Add Item</span>
             </button>
+            {profileClicked && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div
+                ref={modalNewTaskRef}
+                className="bg-white rounded-lg shadow-lg p-6 w-96"
+              >
+                <h2 className="text-3xl font-bold mb-4">New Task</h2>
+                <p className="mb-4 text-1xl">Username: {username}</p>
+                <p className="mb-4 text-1xl">User ID: {id}</p>
+                <button
+                  onClick={() => {
+                    modalNewTaskRef.current.remove();
+                    setProfileClicked(false);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>)}
             <button onClick={() => setProfileClicked(true)} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white">
               <MinusIcon className="h-5 w-5 text-gray-600" />
               <span className="text-sm font-medium">Remove Item</span>
