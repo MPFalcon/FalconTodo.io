@@ -1,3 +1,5 @@
+'use server';
+
 import client from "@/app/lib/cassandra";
 import { NextResponse } from "next/server";
 

@@ -3,24 +3,48 @@
 import { UserIcon } from '@heroicons/react/24/outline';
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function Page() {
-  const test_list = [1,2,3,4,5, 6, 7, 8, 9];
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const id = searchParams.get('id');
+  const username = searchParams.get('username');
+  const test_list = [1,2,3,4,5, 6, 7, 8, 9];
   const modalRefObj = {
     profile_ref: useRef(null),
     new_task_ref: useRef(null)
   }
+  const [api_call, setApiCall] = useState(false);
   const [modalClickedObj, setModelClicked] = useState({
     profile: false,
     new_task: false,
   });
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id');
-  const username = searchParams.get('username');
+  const [newTaskInfo, setNewTaskInfo] = useState({
+    user_id: id,
+    title: "",
+    description: "",
+    media: null,
+    time_to_complete: ""
+  })
 
-  
+  useEffect(() => {
+    async function fetchData() {
+      const res = await fetch("/api/post-task", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTaskInfo),
+      });
+
+      const data = await res.json();
+    }
+
+    if (!api_call) return
+    fetchData();
+    setApiCall(false);
+  }, [api_call]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
@@ -54,7 +78,7 @@ export default function Page() {
             <p className="mb-4 text-1xl">User ID: {id}</p>
             <button
               onClick={() => {
-                router.push('/')
+                router.push('/');
               }}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 mr-10"
             >
@@ -96,11 +120,70 @@ export default function Page() {
             {modalClickedObj.new_task && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <div
                 ref={modalRefObj.new_task_ref}
-                className="bg-white rounded-lg shadow-lg p-6 w-96"
+                className="bg-white rounded-lg shadow-lg p-6 min-w-200 min-h-125"
               >
-                <h2 className="text-3xl font-bold mb-4">New Task</h2>
-                <p className="mb-4 text-1xl">Username: {username}</p>
-                <p className="mb-4 text-1xl">User ID: {id}</p>
+                <h2 className="text-3xl font-bold mb-15">New Task</h2>
+                <div className="flex flex-row mb-5">
+                  <p className="text-3xl mr-10">Title: </p>
+                  <input
+                    id="title"
+                    type="text"
+                    placeholder="New Task"
+                    value={newTaskInfo.title}
+                    onChange={(event) => {
+                      setNewTaskInfo((prevState) => ({
+                        ...prevState,
+                        title: event.target.value
+                      }))
+                    }}
+                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div className="flex flex-row mb-5">
+                  <p className="text-3xl mr-10">Description: </p>
+                  <textarea
+                    id="description"
+                    type="text"
+                    placeholder="Need to check garbage"
+                    value={newTaskInfo.description}
+                    onChange={(event) => {
+                      setNewTaskInfo((prevState) => ({
+                        ...prevState,
+                        description: event.target.value
+                      }))
+                    }}
+                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div className="flex flex-row mb-5">
+                  <p className="text-3xl mr-10">Supporting Media: </p>
+                  <input
+                    id="media"
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.pdf,.txt,.docx,.pdf"
+                    onChange={(event) => {
+                      setNewTaskInfo((prevState) => ({
+                        ...prevState,
+                        media: event.target.files[0]
+                      }))
+                    }}
+                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div className="flex flex-row mb-15">
+                  <p className="text-3xl mr-10">Deadline: </p>
+                  <input
+                    id="time_to_complete"
+                    type="datetime-local"
+                    onChange={(event) => {
+                      setNewTaskInfo((prevState) => ({
+                        ...prevState,
+                        time_to_complete: event.target.valueAsDate
+                      }))
+                    }}
+                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
                 <button
                   onClick={() => {
                     modalRefObj.new_task_ref.current.remove();
@@ -112,6 +195,19 @@ export default function Page() {
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                 >
                   Close
+                </button>
+                <button
+                  onClick={() => {
+                    modalRefObj.new_task_ref.current.remove();
+                    setModelClicked((prevState) => ({
+                      ...prevState,
+                      new_task: false
+                    }));
+                    setApiCall(true);
+                  }}
+                  className="px-4 py-2 ml-10 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Submit
                 </button>
               </div>
             </div>)}

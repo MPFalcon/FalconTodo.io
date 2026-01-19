@@ -1,3 +1,5 @@
+'use server';
+
 import cassandra from "cassandra-driver";
 
 // Initiate Cassandra API
