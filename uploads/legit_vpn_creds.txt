@@ -1,0 +1,4 @@
+VPN Server: 12.25.9.7
+User: user
+Pass: UMXtf04mXlHHOw==
+Passkey: nAmbufuNJZFao1MY4X7QPw==

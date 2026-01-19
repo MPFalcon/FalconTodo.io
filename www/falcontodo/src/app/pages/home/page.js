@@ -25,12 +25,58 @@ export default function Page() {
     title: "",
     description: "",
     media: null,
+    media_path: "",
     time_to_complete: ""
   })
 
   useEffect(() => {
-    async function fetchData() {
-      const res = await fetch("/api/post-task", {
+    async function postMedia() {
+      const file = newTaskInfo.media;
+      const formData = new FormData();
+      formData.append('media', file);
+
+      const res = await fetch('/api/post-media', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if ((data) && (!data.error ) && ('No file uploaded' !== data.error)) {
+        setNewTaskInfo((prevState) => ({
+          ...prevState,
+          media: data.path
+        }));
+      } else {
+        console.log("File upload operation failed");
+      }
+    }
+
+    async function postTask() {
+      const file = newTaskInfo.media;
+      const formData = new FormData();
+      formData.append('media', file);
+
+      let res = await fetch('/api/post-media', {
+        method: 'POST',
+        body: formData
+      });
+
+      let data = await res.json();
+
+      if ((data) && (!data.error ) && ('No file uploaded' !== data.error)) {
+        setNewTaskInfo((prevState) => ({
+          ...prevState,
+          media_path: data.path
+        }));
+        console.log("File successfully uploaded");
+      } else {
+        console.log("File upload operation failed");
+      }
+
+      console.log(newTaskInfo.media_path);
+
+      res = await fetch("/api/post-task", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -38,23 +84,23 @@ export default function Page() {
         body: JSON.stringify(newTaskInfo),
       });
 
-      const data = await res.json();
+      data = await res.json();
 
       if (!data) {
         console.log("Client received no response");
-      }
-      if ("Invalid Format" == data.error) {
+      } else if ("Invalid Format" == data.error) {
         console.log("Invalid format detected on server side");
       } else if ("Server Error" == data.error) {
         console.log("Some thing went wrong on server side");
       }
     }
-
+  
     if (!api_call) return
-    fetchData();
+    console.log(newTaskInfo.media);
+    // postMedia();
+    postTask();
     setApiCall(false);
   }, [api_call]);
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
       <div className="flex sticky top-0 w-full bg-white rounded-xl shadow-lg p-0 flex-row">
@@ -169,6 +215,7 @@ export default function Page() {
                   <input
                     id="media"
                     type="file"
+                    name='media'
                     accept=".png,.jpg,.jpeg,.pdf,.txt,.docx,.pdf"
                     onChange={(event) => {
                       setNewTaskInfo((prevState) => ({

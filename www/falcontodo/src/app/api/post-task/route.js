@@ -1,8 +1,6 @@
 'use server';
 
 import client from "@/app/lib/cassandra";
-import fs from 'fs/promises';
-import path from 'path';
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -22,8 +20,7 @@ export async function POST(req) {
   if ((!task_info.user_id || typeof task_info.user_id !== "string") || 
   (!task_info.title || typeof task_info.title !== "string") || 
   (!task_info.description || typeof task_info.description !== "string") ||
-  (!task_info.time_to_complete || typeof task_info.time_to_complete !== "string") ||
-  (!task_info.media)) {
+  (!task_info.time_to_complete || typeof task_info.time_to_complete !== "string")) {
     return NextResponse.json(
       { error: "Invalid Format" },
       { status: 400 }
@@ -36,19 +33,10 @@ export async function POST(req) {
         (task_id, user_id, title, description, media, time_created, time_needed_to_complete)
         VALUES (uuid(), ?, ?, ?, ?, toTimeStamp(now()), ?);
   `;
-
-  const bytes = await task_info.media.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-  
-  const uploadDir = path.join(process.cwd(), '../../uploads')
-  await fs.mkdir(uploadDir, { recursive: true })
-  
-  const filePath = path.join(uploadDir, task_info.media.name)
-  await fs.writeFile(filePath, buffer)
   
   const utcISOString = new Date(task_info.time_to_complete).toISOString();
 
-  await client.execute(query, [task_info.user_id, task_info.title, task_info.description, filePath, utcISOString], { prepare: true })
+  await client.execute(query, [task_info.user_id, task_info.title, task_info.description, task_info.media_path , utcISOString], { prepare: true })
   .then((result) => {
     console.log(result);
   })
