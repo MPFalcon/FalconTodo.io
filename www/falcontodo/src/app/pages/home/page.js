@@ -39,6 +39,15 @@ export default function Page() {
       });
 
       const data = await res.json();
+
+      if (!data) {
+        console.log("Client received no response");
+      }
+      if ("Invalid Format" == data.error) {
+        console.log("Invalid format detected on server side");
+      } else if ("Server Error" == data.error) {
+        console.log("Some thing went wrong on server side");
+      }
     }
 
     if (!api_call) return

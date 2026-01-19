@@ -18,8 +18,7 @@ CREATE TABLE IF NOT EXISTS falcon_todo_db.tasks (
     description text,
     media text,
     time_created timestamp,
-    time_needed_to_complete timestamp,
-    FOREIGN KEY (user_id) REFERENCES falcon_todo_db.users(id)
+    time_needed_to_complete timestamp
 );
 
 INSERT INTO falcon_todo_db.users

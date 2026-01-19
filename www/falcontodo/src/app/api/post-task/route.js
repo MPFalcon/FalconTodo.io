@@ -1,22 +1,34 @@
 'use server';
 
 import client from "@/app/lib/cassandra";
-import fs from 'fs/promises'
-import path from 'path'
+import fs from 'fs/promises';
+import path from 'path';
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   // Receive arguments
   let res = 0;
-  const { task_info } = await req.json();
+  const task_info = await req.json();
+
+  // Check if task object exists
+  if (!task_info) {
+    return NextResponse.json(
+      { error: "Invalid Format" },
+      { status: 400 }
+    );
+  }
 
   // Basic validation
-  // if ((!username || typeof username !== "string") || (!password || typeof password !== "string")) {
-  //   return NextResponse.json(
-  //     { error: "Invalid Format" },
-  //     { status: 400 }
-  //   );
-  // }
+  if ((!task_info.user_id || typeof task_info.user_id !== "string") || 
+  (!task_info.title || typeof task_info.title !== "string") || 
+  (!task_info.description || typeof task_info.description !== "string") ||
+  (!task_info.time_to_complete || typeof task_info.time_to_complete !== "string") ||
+  (!task_info.media)) {
+    return NextResponse.json(
+      { error: "Invalid Format" },
+      { status: 400 }
+    );
+  }
 
   // Define and execute the queries to check 
   let query =  `
@@ -25,10 +37,18 @@ export async function POST(req) {
         VALUES (uuid(), ?, ?, ?, ?, toTimeStamp(now()), ?);
   `;
 
-  const utcISOString = new Date(task_info.time_to_complete).toISOString()
+  const bytes = await task_info.media.arrayBuffer()
+  const buffer = Buffer.from(bytes)
+  
+  const uploadDir = path.join(process.cwd(), '../../uploads')
+  await fs.mkdir(uploadDir, { recursive: true })
+  
+  const filePath = path.join(uploadDir, task_info.media.name)
+  await fs.writeFile(filePath, buffer)
+  
+  const utcISOString = new Date(task_info.time_to_complete).toISOString();
 
-
-  await client.execute(query, [username, password], { prepare: true })
+  await client.execute(query, [task_info.user_id, task_info.title, task_info.description, filePath, utcISOString], { prepare: true })
   .then((result) => {
     console.log(result);
   })
