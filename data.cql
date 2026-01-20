@@ -12,13 +12,14 @@ CREATE TABLE IF NOT EXISTS falcon_todo_db.users (
 );
 
 CREATE TABLE IF NOT EXISTS falcon_todo_db.tasks (
-    task_id uuid PRIMARY KEY,
+    task_id uuid,
     user_id uuid,
     title text,
     description text,
     media text,
     time_created timestamp,
-    time_needed_to_complete timestamp
+    time_needed_to_complete timestamp,
+    PRIMARY KEY (task_id, user_id)
 );
 
 INSERT INTO falcon_todo_db.users

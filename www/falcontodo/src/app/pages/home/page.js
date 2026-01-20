@@ -10,12 +10,12 @@ export default function Page() {
   const router = useRouter();
   const id = searchParams.get('id');
   const username = searchParams.get('username');
-  const test_list = [1,2,3,4,5, 6, 7, 8, 9];
   const modalRefObj = {
     profile_ref: useRef(null),
     new_task_ref: useRef(null)
   }
   const [api_call, setApiCall] = useState(false);
+  const [getTaskApiCall, setGetTaskApiCall] = useState(true);
   const [modalClickedObj, setModelClicked] = useState({
     profile: false,
     new_task: false,
@@ -28,6 +28,7 @@ export default function Page() {
     media_path: "",
     time_to_complete: ""
   })
+  const [taskList, setTaskList] = useState([]);
 
   useEffect(() => {
     async function postMedia() {
@@ -45,28 +46,6 @@ export default function Page() {
       if ((data) && (!data.error ) && ('No file uploaded' !== data.error)) {
         setNewTaskInfo((prevState) => ({
           ...prevState,
-          media: data.path
-        }));
-      } else {
-        console.log("File upload operation failed");
-      }
-    }
-
-    async function postTask() {
-      const file = newTaskInfo.media;
-      const formData = new FormData();
-      formData.append('media', file);
-
-      let res = await fetch('/api/post-media', {
-        method: 'POST',
-        body: formData
-      });
-
-      let data = await res.json();
-
-      if ((data) && (!data.error ) && ('No file uploaded' !== data.error)) {
-        setNewTaskInfo((prevState) => ({
-          ...prevState,
           media_path: data.path
         }));
         console.log("File successfully uploaded");
@@ -75,8 +54,10 @@ export default function Page() {
       }
 
       console.log(newTaskInfo.media_path);
+    }
 
-      res = await fetch("/api/post-task", {
+    async function postTask() {
+      const res = await fetch("/api/post-task", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +65,7 @@ export default function Page() {
         body: JSON.stringify(newTaskInfo),
       });
 
-      data = await res.json();
+      const data = await res.json();
 
       if (!data) {
         console.log("Client received no response");
@@ -96,11 +77,37 @@ export default function Page() {
     }
   
     if (!api_call) return
-    console.log(newTaskInfo.media);
-    // postMedia();
+    postMedia();
     postTask();
     setApiCall(false);
+    setGetTaskApiCall(true);
   }, [api_call]);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      const res = await fetch("/api/get-tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTaskInfo),
+      });
+
+      const data = await res.json();
+
+      if ((!data) || (data.error)) {
+        console.log("Something went wrong fetching existing tasks");
+      } else {
+        setTaskList(data.results);
+        console.log(test_list);
+      }
+    }
+
+    if (!getTaskApiCall) return;
+    fetchTasks();
+    setGetTaskApiCall(false);
+  }, [getTaskApiCall]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
       <div className="flex sticky top-0 w-full bg-white rounded-xl shadow-lg p-0 flex-row">
@@ -272,9 +279,9 @@ export default function Page() {
               <span className="text-sm font-medium">Remove Item</span>
             </button> */}
           </div>
-          {test_list.map((num) => (
-            <div key={num} className='flex justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
-              <p>{num}</p>
+          {test_list.map((task, idx) => (
+            <div key={idx} className='flex justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
+              <p>{task.title}</p>
             </div>
           ))}
         </div>

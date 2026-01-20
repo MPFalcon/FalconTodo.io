@@ -21,7 +21,7 @@ export async function POST(req) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Save to local directory
-    const uploadDir = path.join(process.cwd(), 'src/app/uploads');
+    const uploadDir = path.join(process.cwd(), 'src/app/uploads/');
     await fs.mkdir(uploadDir, { recursive: true });
 
     const filePath = path.join(uploadDir, file.name);
