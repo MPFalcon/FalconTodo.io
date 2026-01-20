@@ -99,7 +99,7 @@ export default function Page() {
         console.log("Something went wrong fetching existing tasks");
       } else {
         setTaskList(data.results);
-        console.log(test_list);
+        console.log(taskList);
       }
     }
 
@@ -110,16 +110,17 @@ export default function Page() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
-      <div className="flex sticky top-0 w-full bg-white rounded-xl shadow-lg p-0 flex-row">
-        <div className="flex justify-center pt-12 ml-2 pr-40">
+      {/* sticky top-0 */}
+      <div className="flex justify-around w-full bg-white rounded-xl shadow-lg py-8 flex-row">
+        <div className="flex justify-around">
           <p>ID: {id}</p>
         </div>
-        <div className="mt-0 flex justify-center p-12 pr-40">
+        <div className="flex justify-center">
           <h2 className="text-4xl font-bold text-center text-gray-800">
             Welcome {username}
           </h2>
         </div>
-        <div className="flex justify-center p-12 mr-0 pl-60">
+        <div className="flex justify-center ">
           <button onClick={() => {
                 setModelClicked((prevState) => ({
                   ...prevState,
@@ -162,7 +163,7 @@ export default function Page() {
         </div>)}
       </div>
       <div className='flex w-full p-0 flex-row my-5 '>
-        <div className='sticky top-40 h-100 bg-white rounded-xl shadow-lg p-5 mr-10 ml-5'>
+        <div className='h-100 bg-white rounded-xl shadow-lg p-5 mr-10 ml-5'>
           <p>Coming Soon...</p>
         </div>
         <div className='flex items-center justify-center flex-col bg-green-500/25 rounded-xl shadow-lg p-5 min-w-285 mr-5'>
@@ -279,9 +280,11 @@ export default function Page() {
               <span className="text-sm font-medium">Remove Item</span>
             </button> */}
           </div>
-          {test_list.map((task, idx) => (
-            <div key={idx} className='flex justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
+          {taskList.map((task, idx) => (
+            <div key={idx} className='flex flex-col justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
               <p>{task.title}</p>
+              <p>{task.description}</p>
+              <p>{task.task_id}</p>
             </div>
           ))}
         </div>
