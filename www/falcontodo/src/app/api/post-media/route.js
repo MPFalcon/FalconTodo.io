@@ -10,6 +10,7 @@ export async function POST(req) {
     // Read formData
     const formData = await req.formData();
     const file = formData.get('media'); // must match input name="media"
+    const id = formData.get('id');
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -21,14 +22,14 @@ export async function POST(req) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Save to local directory
-    const uploadDir = path.join(process.cwd(), 'src/app/uploads/');
+    const uploadDir = path.join(process.cwd(), 'src/app/uploads/'+id);
     await fs.mkdir(uploadDir, { recursive: true });
 
     const filePath = path.join(uploadDir, file.name);
     await fs.writeFile(filePath, buffer);
 
-    const url = 'http://'+host+':'+port+'/uploads/'+file.name;
-
+    const url = 'http://'+host+':'+port+'/uploads/'+id+'/'+file.name;
+    console.log(url);
     return NextResponse.json({ success: true, path: url }, { status: 200 });
   } catch (err) {
     console.error(err);

@@ -30,32 +30,40 @@ export default function Page() {
   })
   const [taskList, setTaskList] = useState([]);
 
-  useEffect(() => {
-    async function postMedia() {
-      const file = newTaskInfo.media;
-      const formData = new FormData();
-      formData.append('media', file);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-      const res = await fetch('/api/post-media', {
-        method: 'POST',
-        body: formData
-      });
+    modalRefObj.new_task_ref.current.remove();
+    setModelClicked((prevState) => ({
+      ...prevState,
+      new_task: false
+    }));
 
-      const data = await res.json();
+    const file = newTaskInfo.media;
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('id', id);
 
-      if ((data) && (!data.error ) && ('No file uploaded' !== data.error)) {
-        setNewTaskInfo((prevState) => ({
-          ...prevState,
-          media_path: data.path
-        }));
-        console.log("File successfully uploaded");
-      } else {
-        console.log("File upload operation failed");
-      }
+    const res = await fetch('/api/post-media', {
+      method: 'POST',
+      body: formData
+    });
 
-      console.log(newTaskInfo.media_path);
+    const data = await res.json();
+
+    if ((data) && (data.success)) {
+      setNewTaskInfo((prevState) => ({
+        ...prevState,
+        media_path: data.path
+      }));
+      console.log("File successfully uploaded");
+      setApiCall(true);
+    } else {
+      console.log("File upload operation failed");
     }
+  };
 
+  useEffect(() => {
     async function postTask() {
       const res = await fetch("/api/post-task", {
         method: "POST",
@@ -76,11 +84,12 @@ export default function Page() {
       }
     }
   
-    if (!api_call) return
-    postMedia();
-    postTask();
-    setApiCall(false);
-    setGetTaskApiCall(true);
+    if ((api_call) && (newTaskInfo.media_path !== "")) {
+      console.log(newTaskInfo.media_path);
+      postTask();
+      setApiCall(false);
+      setGetTaskApiCall(true);
+    }
   }, [api_call]);
 
   useEffect(() => {
@@ -180,101 +189,98 @@ export default function Page() {
                 <span className="text-sm font-medium">Add Item</span>
               </div>
             </button>
-            {modalClickedObj.new_task && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div
-                ref={modalRefObj.new_task_ref}
-                className="bg-white rounded-lg shadow-lg p-6 min-w-200 min-h-125"
-              >
-                <h2 className="text-3xl font-bold mb-15">New Task</h2>
-                <div className="flex flex-row mb-5">
-                  <p className="text-3xl mr-10">Title: </p>
-                  <input
-                    id="title"
-                    type="text"
-                    placeholder="New Task"
-                    value={newTaskInfo.title}
-                    onChange={(event) => {
-                      setNewTaskInfo((prevState) => ({
-                        ...prevState,
-                        title: event.target.value
-                      }))
-                    }}
-                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex flex-row mb-5">
-                  <p className="text-3xl mr-10">Description: </p>
-                  <textarea
-                    id="description"
-                    type="text"
-                    placeholder="Need to check garbage"
-                    value={newTaskInfo.description}
-                    onChange={(event) => {
-                      setNewTaskInfo((prevState) => ({
-                        ...prevState,
-                        description: event.target.value
-                      }))
-                    }}
-                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex flex-row mb-5">
-                  <p className="text-3xl mr-10">Supporting Media: </p>
-                  <input
-                    id="media"
-                    type="file"
-                    name='media'
-                    accept=".png,.jpg,.jpeg,.pdf,.txt,.docx,.pdf"
-                    onChange={(event) => {
-                      setNewTaskInfo((prevState) => ({
-                        ...prevState,
-                        media: event.target.files[0]
-                      }))
-                    }}
-                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <div className="flex flex-row mb-15">
-                  <p className="text-3xl mr-10">Deadline: </p>
-                  <input
-                    id="time_to_complete"
-                    type="datetime-local"
-                    onChange={(event) => {
-                      setNewTaskInfo((prevState) => ({
-                        ...prevState,
-                        time_to_complete: event.target.valueAsDate
-                      }))
-                    }}
-                    className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    modalRefObj.new_task_ref.current.remove();
-                    setModelClicked((prevState) => ({
-                      ...prevState,
-                      new_task: false
-                    }));
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            {modalClickedObj.new_task && (
+              <form onSubmit={handleSubmit} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div
+                  ref={modalRefObj.new_task_ref}
+                  className="bg-white rounded-lg shadow-lg p-6 min-w-200 min-h-125"
                 >
-                  Close
-                </button>
-                <button
-                  onClick={() => {
-                    modalRefObj.new_task_ref.current.remove();
-                    setModelClicked((prevState) => ({
-                      ...prevState,
-                      new_task: false
-                    }));
-                    setApiCall(true);
-                  }}
-                  className="px-4 py-2 ml-10 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Submit
-                </button>
-              </div>
-            </div>)}
+                  <h2 className="text-3xl font-bold mb-15">New Task</h2>
+                  <div className="flex flex-row mb-5">
+                    <p className="text-3xl mr-10">Title: </p>
+                    <input
+                      id="title"
+                      type="text"
+                      placeholder="New Task"
+                      value={newTaskInfo.title}
+                      onChange={(event) => {
+                        setNewTaskInfo((prevState) => ({
+                          ...prevState,
+                          title: event.target.value
+                        }))
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-row mb-5">
+                    <p className="text-3xl mr-10">Description: </p>
+                    <textarea
+                      id="description"
+                      type="text"
+                      placeholder="Need to check garbage"
+                      value={newTaskInfo.description}
+                      onChange={(event) => {
+                        setNewTaskInfo((prevState) => ({
+                          ...prevState,
+                          description: event.target.value
+                        }))
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-row mb-5">
+                    <p className="text-3xl mr-10">Supporting Media: </p>
+                    <input
+                      id="media"
+                      type='file'
+                      accept=".png,.jpg,.jpeg,.pdf,.txt,.docx,.pdf"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          setNewTaskInfo((prevState) => ({
+                            ...prevState,
+                            media: file
+                          }));
+                        }
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-row mb-15">
+                    <p className="text-3xl mr-10">Deadline: </p>
+                    <input
+                      id="time_to_complete"
+                      type="datetime-local"
+                      onChange={(event) => {
+                        setNewTaskInfo((prevState) => ({
+                          ...prevState,
+                          time_to_complete: event.target.valueAsDate
+                        }))
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      modalRefObj.new_task_ref.current.remove();
+                      setModelClicked((prevState) => ({
+                        ...prevState,
+                        new_task: false
+                      }));
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type='submit'
+                    className="px-4 py-2 ml-10 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            )}
             {/* <button onClick={() => setModelClicked(true)} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white">
               <MinusIcon className="h-5 w-5 text-gray-600" />
               <span className="text-sm font-medium">Remove Item</span>
