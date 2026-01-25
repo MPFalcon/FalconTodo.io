@@ -31,7 +31,6 @@ export async function POST(req) {
     await fs.writeFile(filePath, buffer);
 
     const url = 'http://'+host+':'+port+'/uploads/'+id+'/'+file.name;
-    console.log(url);
     return NextResponse.json({ success: true, path: url }, { status: 200 });
   } catch (err) {
     console.error(err);

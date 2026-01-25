@@ -63,7 +63,6 @@ export async function POST(req) {
   }
 
   // Return OK in success case
-  console.log(valid_user);
   return NextResponse.json(
     { error: "Success", uuid: valid_user.user_id, username: valid_user.username },
     { status: 200 }

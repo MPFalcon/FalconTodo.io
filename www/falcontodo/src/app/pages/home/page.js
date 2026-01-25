@@ -30,7 +30,29 @@ export default function Page() {
   })
   const [taskList, setTaskList] = useState([]);
 
-  const handleSubmit = async (event) => {
+  const handleAccountRemove = async (event) => {
+    event.preventDefault();
+
+    const res = await fetch("/api/delete-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: id }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log("User Successfully Deleted");
+      router.push('/');
+    } else {
+      console.log("Operation failed removing current user");
+    }
+
+  }
+
+  const handleAddSubmit = async (event) => {
     event.preventDefault();
 
     modalRefObj.new_task_ref.current.remove();
@@ -96,6 +118,23 @@ export default function Page() {
     }
   };
 
+  const handleRemoveSubmit = async (task_id) => {
+    const res = await fetch("/api/delete-task", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ task_id }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log("Task Successfully Deleted");
+      setApiCall(true);
+    }
+  }
+
   useEffect(() => {
     async function fetchTasks() {
       const res = await fetch("/api/get-tasks", {
@@ -152,26 +191,34 @@ export default function Page() {
             <h2 className="text-3xl font-bold mb-4">Profile</h2>
             <p className="mb-4 text-1xl">Username: {username}</p>
             <p className="mb-4 text-1xl">User ID: {id}</p>
-            <button
-              onClick={() => {
-                router.push('/');
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 mr-10"
-            >
-              Log Out
-            </button>
-            <button
-              onClick={() => {
-                modalRefObj.profile_ref.current.remove();
-                setModelClicked((prevState) => ({
-                  ...prevState,
-                  profile: false
-                }));
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-              Close
-            </button>
+            <div className='flex flex-row justify-around'>
+              <button
+                onClick={() => {
+                  router.push('/');
+                }}
+                className="px-2 bg-red-600 text-white rounded hover:bg-red-700 mr-10"
+              >
+                Log Out
+              </button>
+              <button
+                onClick={handleAccountRemove}
+                className="p-2 bg-red-600 text-white rounded hover:bg-red-700 mr-10"
+              >
+                Delete Account
+              </button>
+              <button
+                onClick={() => {
+                  modalRefObj.profile_ref.current.remove();
+                  setModelClicked((prevState) => ({
+                    ...prevState,
+                    profile: false
+                  }));
+                }}
+                className="p-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>)}
       </div>
@@ -194,7 +241,7 @@ export default function Page() {
               </div>
             </button>
             {modalClickedObj.new_task && (
-              <form onSubmit={handleSubmit} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <form onSubmit={handleAddSubmit} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                 <div
                   ref={modalRefObj.new_task_ref}
                   className="bg-white rounded-lg shadow-lg p-6 min-w-200 min-h-125"
@@ -303,12 +350,10 @@ export default function Page() {
               <div className='flex flex-row text-2xl p-6 bg-black justify-around'>
                 <p className='text-white'>Task ID: {task.task_id}</p>
                 <div className="flex justify-center">
-                  <button onClick={() => {
-                        setModelClicked((prevState) => ({
-                          ...prevState,
-                          profile: true
-                        }));
-                      }} className="flex items-center bg-white gap-2 rounded-lg border px-4 py-2 hover:bg-gray-300">
+                  <button onClick={(event) => {
+                    event.preventDefault();
+                    handleRemoveSubmit(task.task_id);
+                  }} className="flex items-center bg-white gap-2 rounded-lg border px-4 py-2 hover:bg-gray-300">
                     <MinusIcon className="h-5 w-5 text-gray-600" />
                     <span className="text-sm font-medium">Remove</span>
                   </button>

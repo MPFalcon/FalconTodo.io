@@ -5,25 +5,25 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   // Receive arguments
-  let res = 0;
-  const { username, password } = await req.json();
+  const { task_id } = await req.json();
 
   // Basic validation
-  if ((!username || typeof username !== "string") || (!password || typeof password !== "string")) {
+  if ((!task_id || typeof task_id !== "string")) {
     return NextResponse.json(
       { error: "Invalid Format" },
       { status: 400 }
     );
   }
 
-  // Define and execute the queries to check 
+  // Define and execute the queries
   let query =  `
-      INSERT INTO falcon_todo_db.users
-        (id, username, password, first_sign_in)
-        VALUES (uuid(), ?, ?, toTimeStamp(now()));
+      DELETE FROM tasks
+      WHERE task_id = ?;
   `;
 
-  await client.execute(query, [username, password], { prepare: true })
+  let res = 0;
+
+  await client.execute(query, [task_id], { prepare: true })
   .catch((err) => {
     console.error(err);
     res = (-1);
@@ -39,7 +39,7 @@ export async function POST(req) {
 
   // Return OK in success case
   return NextResponse.json(
-    { error: "Success" },
+    { success: true },
     { status: 200 }
   );
 }

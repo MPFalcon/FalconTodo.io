@@ -37,9 +37,6 @@ export async function POST(req) {
   const utcISOString = new Date(task_info.time_to_complete).toISOString();
 
   await client.execute(query, [task_info.user_id, task_info.title, task_info.description, task_info.media_path , utcISOString], { prepare: true })
-  .then((result) => {
-    console.log(result);
-  })
   .catch((err) => {
     console.error(err);
     res = (-1);

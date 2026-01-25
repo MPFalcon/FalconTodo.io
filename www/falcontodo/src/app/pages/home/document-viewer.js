@@ -15,7 +15,6 @@ export default function PreviewModal({ task }) {
         <DocViewer
             documents={[{ uri: task.media }]}
             pluginRenderers={DocViewerRenderers}
-            // style={{ height: 100 }}
             config={{
                 header: {
                     disableHeader: false,
