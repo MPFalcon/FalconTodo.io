@@ -4,6 +4,7 @@ import { UserIcon } from '@heroicons/react/24/outline';
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
+import PreviewModal from './document-viewer';
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -290,6 +291,7 @@ export default function Page() {
             <div key={idx} className='flex flex-col justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
               <p>{task.title}</p>
               <p>{task.description}</p>
+              <PreviewModal task={task} />
               <p>{task.task_id}</p>
             </div>
           ))}

@@ -1,3 +1,5 @@
+'use server';
+
 import fs from 'fs/promises';
 import path from 'path';
 import { NextResponse } from 'next/server';
@@ -22,7 +24,7 @@ export async function POST(req) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Save to local directory
-    const uploadDir = path.join(process.cwd(), 'src/app/uploads/'+id);
+    const uploadDir = path.join(process.cwd(), 'public/uploads/'+id);
     await fs.mkdir(uploadDir, { recursive: true });
 
     const filePath = path.join(uploadDir, file.name);
