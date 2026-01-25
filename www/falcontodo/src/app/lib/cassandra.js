@@ -16,4 +16,6 @@ let client = new cassandra.Client({
     keyspace:'falcon_todo_db'
 });
 
-export default client
+export default client;
+
+// EOF

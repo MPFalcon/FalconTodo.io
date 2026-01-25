@@ -19,21 +19,10 @@ export default function Register() {
     pass_match: true
   });
 
-  const handleSetUserName = (event) => {
-    setUsername(event.target.value);
-  };
-
-  const handleSetPassword = (event) => {
-    setPassword(event.target.value);
-  };
-
-  const handleSetDupPassword = (event) => {
-    setDupPassword(event.target.value);
-  };
-
   const handleSubmit = (event) => {
     // Prevent default form submission
     event.preventDefault();
+
     setCantSubmitAgain(false);
     if (!username || !password || !dup_password) {
       setStatus((prevState) => ({
@@ -108,19 +97,18 @@ export default function Register() {
       }
     }
     
-    if (api_call) {
-      if (password !== dup_password) {
-        setStatus((prevState) => ({
-          ...prevState,
-          pass_match: false
-        }));
-      } else {
-        setStatus((prevState) => ({
-          ...prevState,
-          pass_match: true
-        }));
-        fetchData();
-      }
+    if (!api_call) return;
+    if (password !== dup_password) {
+      setStatus((prevState) => ({
+        ...prevState,
+        pass_match: false
+      }));
+    } else {
+      setStatus((prevState) => ({
+        ...prevState,
+        pass_match: true
+      }));
+      fetchData();
     }
 
     setCantSubmitAgain(false);
@@ -163,7 +151,7 @@ export default function Register() {
               type="username"
               placeholder="falconlover02"
               value={username}
-              onChange={handleSetUserName}
+              onChange={(event) => setUsername(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -176,7 +164,7 @@ export default function Register() {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={handleSetPassword}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -189,7 +177,7 @@ export default function Register() {
               type="password"
               placeholder="••••••••"
               value={dup_password}
-              onChange={handleSetDupPassword}
+              onChange={(event) => setDupPassword(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -206,3 +194,5 @@ export default function Register() {
     </main>
   );
 }
+
+// EOF

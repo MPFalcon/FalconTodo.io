@@ -16,6 +16,7 @@ export default function Page() {
     new_task_ref: useRef(null)
   }
   const [api_call, setApiCall] = useState(true);
+  const [taskList, setTaskList] = useState([]);
   const [modalClickedObj, setModelClicked] = useState({
     profile: false,
     new_task: false,
@@ -28,7 +29,6 @@ export default function Page() {
     media_path: "",
     time_to_complete: ""
   })
-  const [taskList, setTaskList] = useState([]);
 
   const handleAccountRemove = async (event) => {
     event.preventDefault();
@@ -332,10 +332,6 @@ export default function Page() {
                 </div>
               </form>
             )}
-            {/* <button onClick={() => setModelClicked(true)} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white">
-              <MinusIcon className="h-5 w-5 text-gray-600" />
-              <span className="text-sm font-medium">Remove Item</span>
-            </button> */}
           </div>
           {taskList && taskList.map((task, idx) => (
             <div key={idx} className='flex flex-col justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
@@ -366,3 +362,5 @@ export default function Page() {
     </div>
   );
 }
+
+// EOF

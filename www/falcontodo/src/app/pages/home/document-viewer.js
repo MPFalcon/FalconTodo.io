@@ -7,9 +7,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 export default function PreviewModal({ task }) {
-  const [open, setOpen] = useState(false);
-  const file_name = task.media.substring(task.media.lastIndexOf('/') + 1);
-
+//   const file_name = task.media.substring(task.media.lastIndexOf('/') + 1);
   return (
     <>
         <DocViewer
@@ -33,3 +31,5 @@ export default function PreviewModal({ task }) {
     </>
   );
 }
+
+// EOF

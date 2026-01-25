@@ -14,14 +14,6 @@ export default function Home() {
   const [api_call, setApiCall] = useState(false);
   const [valCreds, setValCreds] = useState(true);
 
-  const handleSetUserName = (event) => {
-    setUsername(event.target.value);
-  };
-
-  const handleSetPassword = (event) => {
-    setPassword(event.target.value);
-  };
-
   const handleSubmit = (event) => {
     // Prevent default form submission
     event.preventDefault();
@@ -59,6 +51,7 @@ export default function Home() {
         router.push('/pages/home?id='+data.uuid+'&username='+data.username);
       }
     }
+
     if (!api_call) return
     fetchData();
     setCantSubmitAgain(false);
@@ -87,7 +80,7 @@ export default function Home() {
               type="username"
               placeholder="falconlover02"
               value={username}
-              onChange={handleSetUserName}
+              onChange={(event) => setUsername(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -100,7 +93,7 @@ export default function Home() {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={handleSetPassword}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -123,3 +116,5 @@ export default function Home() {
     </main>
   );
 }
+
+// EOF
