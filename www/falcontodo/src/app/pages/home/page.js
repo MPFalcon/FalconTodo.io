@@ -15,8 +15,7 @@ export default function Page() {
     profile_ref: useRef(null),
     new_task_ref: useRef(null)
   }
-  const [api_call, setApiCall] = useState(false);
-  const [getTaskApiCall, setGetTaskApiCall] = useState(true);
+  const [api_call, setApiCall] = useState(true);
   const [modalClickedObj, setModelClicked] = useState({
     profile: false,
     new_task: false,
@@ -40,58 +39,62 @@ export default function Page() {
       new_task: false
     }));
 
-    const file = newTaskInfo.media;
-    const formData = new FormData();
-    formData.append('media', file);
-    formData.append('id', id);
+    if (newTaskInfo.media) {
+      const file = newTaskInfo.media;
+      const formData = new FormData();
+      formData.append('media', file);
+      formData.append('id', id);
 
-    const res = await fetch('/api/post-media', {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if ((data) && (data.success)) {
-      setNewTaskInfo((prevState) => ({
-        ...prevState,
-        media_path: data.path
-      }));
-      console.log("File successfully uploaded");
-      setApiCall(true);
-    } else {
-      console.log("File upload operation failed");
-    }
-  };
-
-  useEffect(() => {
-    async function postTask() {
-      const res = await fetch("/api/post-task", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newTaskInfo),
+      const res = await fetch('/api/post-media', {
+        method: 'POST',
+        body: formData
       });
 
       const data = await res.json();
 
-      if (!data) {
-        console.log("Client received no response");
-      } else if ("Invalid Format" == data.error) {
-        console.log("Invalid format detected on server side");
-      } else if ("Server Error" == data.error) {
-        console.log("Some thing went wrong on server side");
+      if ((data) && (data.success)) {
+        setNewTaskInfo((prevState) => ({
+          ...prevState,
+          media_path: data.path
+        }));
+        console.log("File successfully uploaded");
+        setApiCall(true);
+      } else {
+        console.log("File upload operation failed");
+        return;
       }
+    } else {
+      console.log("Task posted without supporting media");
     }
-  
-    if ((api_call) && (newTaskInfo.media_path !== "")) {
-      console.log(newTaskInfo.media_path);
-      postTask();
-      setApiCall(false);
-      setGetTaskApiCall(true);
+
+    const res = await fetch("/api/post-task", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newTaskInfo),
+    });
+
+    const data = await res.json();
+
+    if (!data) {
+      console.log("Client received no response");
+    } else if ("Invalid Format" == data.error) {
+      console.log("Invalid format detected on server side");
+    } else if ("Server Error" == data.error) {
+      console.log("Some thing went wrong on server side");
+    } else {
+      setNewTaskInfo(() => ({
+        user_id: id,
+        title: "",
+        description: "",
+        media: null,
+        media_path: "",
+        time_to_complete: ""
+      }));
+      setApiCall(true);
     }
-  }, [api_call]);
+  };
 
   useEffect(() => {
     async function fetchTasks() {
@@ -113,10 +116,10 @@ export default function Page() {
       }
     }
 
-    if (!getTaskApiCall) return;
+    if (!api_call) return;
     fetchTasks();
-    setGetTaskApiCall(false);
-  }, [getTaskApiCall]);
+    setApiCall(false);
+  }, [api_call]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
@@ -130,7 +133,7 @@ export default function Page() {
             Welcome {username}
           </h2>
         </div>
-        <div className="flex justify-center ">
+        <div className="flex justify-center">
           <button onClick={() => {
                 setModelClicked((prevState) => ({
                   ...prevState,
@@ -287,12 +290,30 @@ export default function Page() {
               <span className="text-sm font-medium">Remove Item</span>
             </button> */}
           </div>
-          {taskList.map((task, idx) => (
+          {taskList && taskList.map((task, idx) => (
             <div key={idx} className='flex flex-col justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
-              <p>{task.title}</p>
-              <p>{task.description}</p>
-              <PreviewModal task={task} />
-              <p>{task.task_id}</p>
+              <div className='text-3xl p-6 bg-blue-300'>
+                <h1 className='font-bold'>Task {(idx + 1)}: {task.title}</h1>
+              </div>
+              <div className='text-1xl p-6 bg-blue-400'>
+                <p>Description</p>
+                <p>{task.description}</p>
+              </div>
+              {task.media && <PreviewModal task={task} />}
+              <div className='flex flex-row text-2xl p-6 bg-black justify-around'>
+                <p className='text-white'>Task ID: {task.task_id}</p>
+                <div className="flex justify-center">
+                  <button onClick={() => {
+                        setModelClicked((prevState) => ({
+                          ...prevState,
+                          profile: true
+                        }));
+                      }} className="flex items-center bg-white gap-2 rounded-lg border px-4 py-2 hover:bg-gray-300">
+                    <MinusIcon className="h-5 w-5 text-gray-600" />
+                    <span className="text-sm font-medium">Remove</span>
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>
