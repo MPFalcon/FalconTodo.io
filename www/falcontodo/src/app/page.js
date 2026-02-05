@@ -65,7 +65,7 @@ export default function Home() {
           Log In
         </h2>
         {!valCreds && 
-          <div className="text-center bg-red-500 text-white ">
+          <div className="text-center bg-red-500 text-white">
             Username or password was incorrect
           </div>
         }
@@ -81,7 +81,7 @@ export default function Home() {
               placeholder="falconlover02"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
             />
           </div>
           <div>
@@ -94,7 +94,7 @@ export default function Home() {
               placeholder="••••••••"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
             />
           </div>
           <button

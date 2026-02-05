@@ -28,7 +28,7 @@ export default function Page() {
     media: null,
     media_path: "",
     time_to_complete: ""
-  })
+  });
 
   const handleAccountRemove = async (event) => {
     event.preventDefault();
@@ -86,35 +86,11 @@ export default function Page() {
         return;
       }
     } else {
-      console.log("Task posted without supporting media");
-    }
-
-    const res = await fetch("/api/post-task", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newTaskInfo),
-    });
-
-    const data = await res.json();
-
-    if (!data) {
-      console.log("Client received no response");
-    } else if ("Invalid Format" == data.error) {
-      console.log("Invalid format detected on server side");
-    } else if ("Server Error" == data.error) {
-      console.log("Some thing went wrong on server side");
-    } else {
-      setNewTaskInfo(() => ({
-        user_id: id,
-        title: "",
-        description: "",
-        media: null,
-        media_path: "",
-        time_to_complete: ""
+      setNewTaskInfo((prevState) => ({
+        ...prevState,
+        media_path: 'N/A'
       }));
-      setApiCall(true);
+      console.log("Task posted without supporting media");
     }
   };
 
@@ -134,6 +110,42 @@ export default function Page() {
       setApiCall(true);
     }
   }
+
+  useEffect(() => {
+    async function updateMediaPath() {
+      const res = await fetch("/api/post-task", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTaskInfo),
+      });
+      console.log(newTaskInfo);
+      const data = await res.json();
+
+      if (!data) {
+        console.log("Client received no response");
+      } else if ("Invalid Format" == data.error) {
+        console.log("Invalid format detected on server side");
+      } else if ("Server Error" == data.error) {
+        console.log("Some thing went wrong on server side");
+      } else {
+        setNewTaskInfo(() => ({
+          user_id: id,
+          title: "",
+          description: "",
+          media: null,
+          media_path: "",
+          time_to_complete: ""
+        }));
+        setApiCall(true);
+      }
+    }
+
+    if (!newTaskInfo.media_path) return;
+    updateMediaPath();
+
+  }, [newTaskInfo.media_path]);
 
   useEffect(() => {
     async function fetchTasks() {
@@ -164,7 +176,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
       {/* sticky top-0 */}
       <div className="flex justify-around w-full bg-white rounded-xl shadow-lg py-8 flex-row">
-        <div className="flex justify-around">
+        <div className="flex justify-around text-gray-800">
           <p>ID: {id}</p>
         </div>
         <div className="flex justify-center">
@@ -180,7 +192,7 @@ export default function Page() {
                 }));
               }} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100">
             <UserIcon className="h-5 w-5 text-gray-600" />
-            <span className="text-sm font-medium">Profile</span>
+            <span className="text-sm font-medium text-gray-800">Profile</span>
           </button>
         </div>
         {modalClickedObj.profile && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -188,9 +200,9 @@ export default function Page() {
             ref={modalRefObj.profile_ref}
             className="bg-white rounded-lg shadow-lg p-6 w-96"
           >
-            <h2 className="text-3xl font-bold mb-4">Profile</h2>
-            <p className="mb-4 text-1xl">Username: {username}</p>
-            <p className="mb-4 text-1xl">User ID: {id}</p>
+            <h2 className="text-3xl font-bold mb-4 text-gray-800">Profile</h2>
+            <p className="mb-4 text-1xl text-gray-800">Username: {username}</p>
+            <p className="mb-4 text-1xl text-gray-800">User ID: {id}</p>
             <div className='flex flex-row justify-around'>
               <button
                 onClick={() => {
@@ -223,7 +235,7 @@ export default function Page() {
         </div>)}
       </div>
       <div className='flex w-full p-0 flex-row my-5 '>
-        <div className='h-100 bg-white rounded-xl shadow-lg p-5 mr-10 ml-5'>
+        <div className='h-100 bg-white rounded-xl shadow-lg p-5 mr-10 ml-5 text-gray-800'>
           <p>Coming Soon...</p>
         </div>
         <div className='flex items-center justify-center flex-col bg-green-500/25 rounded-xl shadow-lg p-5 min-w-285 mr-5'>
@@ -237,7 +249,7 @@ export default function Page() {
             className="flex flex-col items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white min-w-100">
               <div className="flex flex-row">
                 <PlusIcon className="h-5 w-10 text-gray-600" />
-                <span className="text-sm font-medium">Add Item</span>
+                <span className="text-sm font-medium text-gray-800">Add Item</span>
               </div>
             </button>
             {modalClickedObj.new_task && (
@@ -246,9 +258,9 @@ export default function Page() {
                   ref={modalRefObj.new_task_ref}
                   className="bg-white rounded-lg shadow-lg p-6 min-w-200 min-h-125"
                 >
-                  <h2 className="text-3xl font-bold mb-15">New Task</h2>
+                  <h2 className="text-3xl font-bold mb-15 text-gray-800">New Task</h2>
                   <div className="flex flex-row mb-5">
-                    <p className="text-3xl mr-10">Title: </p>
+                    <p className="text-3xl mr-10 text-gray-800">Title: </p>
                     <input
                       id="title"
                       type="text"
@@ -260,11 +272,11 @@ export default function Page() {
                           title: event.target.value
                         }))
                       }}
-                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                     />
                   </div>
                   <div className="flex flex-row mb-5">
-                    <p className="text-3xl mr-10">Description: </p>
+                    <p className="text-3xl mr-10 text-gray-800">Description: </p>
                     <textarea
                       id="description"
                       type="text"
@@ -276,11 +288,11 @@ export default function Page() {
                           description: event.target.value
                         }))
                       }}
-                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                     />
                   </div>
                   <div className="flex flex-row mb-5">
-                    <p className="text-3xl mr-10">Supporting Media: </p>
+                    <p className="text-3xl mr-10 text-gray-800">Supporting Media: </p>
                     <input
                       id="media"
                       type='file'
@@ -294,21 +306,21 @@ export default function Page() {
                           }));
                         }
                       }}
-                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                     />
                   </div>
                   <div className="flex flex-row mb-15">
-                    <p className="text-3xl mr-10">Deadline: </p>
+                    <p className="text-3xl mr-10 text-gray-800">Deadline: </p>
                     <input
                       id="time_to_complete"
                       type="datetime-local"
                       onChange={(event) => {
                         setNewTaskInfo((prevState) => ({
                           ...prevState,
-                          time_to_complete: event.target.valueAsDate
+                          time_to_complete: event.target.value
                         }))
                       }}
-                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
                     />
                   </div>
                   <button
@@ -336,13 +348,13 @@ export default function Page() {
           {taskList && taskList.map((task, idx) => (
             <div key={idx} className='flex flex-col justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
               <div className='text-3xl p-6 bg-blue-300'>
-                <h1 className='font-bold'>Task {(idx + 1)}: {task.title}</h1>
+                <h1 className='font-bold text-gray-800'>Task {(idx + 1)}: {task.title}</h1>
               </div>
               <div className='text-1xl p-6 bg-blue-400'>
-                <p>Description</p>
-                <p>{task.description}</p>
+                <p className="text-gray-800">Description</p>
+                <p className="text-gray-800">{task.description}</p>
               </div>
-              {task.media && <PreviewModal task={task} />}
+              {(task.media !== 'N/A') && <PreviewModal task={task} />}
               <div className='flex flex-row text-2xl p-6 bg-black justify-around'>
                 <p className='text-white'>Task ID: {task.task_id}</p>
                 <div className="flex justify-center">
@@ -351,7 +363,7 @@ export default function Page() {
                     handleRemoveSubmit(task.task_id);
                   }} className="flex items-center bg-white gap-2 rounded-lg border px-4 py-2 hover:bg-gray-300">
                     <MinusIcon className="h-5 w-5 text-gray-600" />
-                    <span className="text-sm font-medium">Remove</span>
+                    <span className="text-sm font-medium text-gray-800">Remove</span>
                   </button>
                 </div>
               </div>

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -26,6 +25,16 @@ export default function PreviewModal({ task }) {
                 },
                 pdfVerticalScrollByDefault: true, // false as default
             }}
+            style={
+                {
+                    color: 'black',
+                    border: '1px solid black',
+                    padding: '10px',
+                    whiteSpace: 'pre-wrap',
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word'
+                }
+            }
             className='h-300'
         />
     </>
