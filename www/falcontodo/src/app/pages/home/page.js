@@ -1,0 +1,378 @@
+'use client';
+
+import { UserIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import PreviewModal from './document-viewer';
+
+export default function Page() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const id = searchParams.get('id');
+  const username = searchParams.get('username');
+  const modalRefObj = {
+    profile_ref: useRef(null),
+    new_task_ref: useRef(null)
+  }
+  const [api_call, setApiCall] = useState(true);
+  const [taskList, setTaskList] = useState([]);
+  const [modalClickedObj, setModelClicked] = useState({
+    profile: false,
+    new_task: false,
+  });
+  const [newTaskInfo, setNewTaskInfo] = useState({
+    user_id: id,
+    title: "",
+    description: "",
+    media: null,
+    media_path: "",
+    time_to_complete: ""
+  });
+
+  const handleAccountRemove = async (event) => {
+    event.preventDefault();
+
+    const res = await fetch("/api/delete-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: id }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log("User Successfully Deleted");
+      router.push('/');
+    } else {
+      console.log("Operation failed removing current user");
+    }
+
+  }
+
+  const handleAddSubmit = async (event) => {
+    event.preventDefault();
+
+    modalRefObj.new_task_ref.current.remove();
+    setModelClicked((prevState) => ({
+      ...prevState,
+      new_task: false
+    }));
+
+    if (newTaskInfo.media) {
+      const file = newTaskInfo.media;
+      const formData = new FormData();
+      formData.append('media', file);
+      formData.append('id', id);
+
+      const res = await fetch('/api/post-media', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if ((data) && (data.success)) {
+        setNewTaskInfo((prevState) => ({
+          ...prevState,
+          media_path: data.path
+        }));
+        console.log("File successfully uploaded");
+        setApiCall(true);
+      } else {
+        console.log("File upload operation failed");
+        return;
+      }
+    } else {
+      setNewTaskInfo((prevState) => ({
+        ...prevState,
+        media_path: 'N/A'
+      }));
+      console.log("Task posted without supporting media");
+    }
+  };
+
+  const handleRemoveSubmit = async (task_id) => {
+    const res = await fetch("/api/delete-task", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ task_id }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      console.log("Task Successfully Deleted");
+      setApiCall(true);
+    }
+  }
+
+  useEffect(() => {
+    async function updateMediaPath() {
+      const res = await fetch("/api/post-task", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTaskInfo),
+      });
+      console.log(newTaskInfo);
+      const data = await res.json();
+
+      if (!data) {
+        console.log("Client received no response");
+      } else if ("Invalid Format" == data.error) {
+        console.log("Invalid format detected on server side");
+      } else if ("Server Error" == data.error) {
+        console.log("Some thing went wrong on server side");
+      } else {
+        setNewTaskInfo(() => ({
+          user_id: id,
+          title: "",
+          description: "",
+          media: null,
+          media_path: "",
+          time_to_complete: ""
+        }));
+        setApiCall(true);
+      }
+    }
+
+    if (!newTaskInfo.media_path) return;
+    updateMediaPath();
+
+  }, [newTaskInfo.media_path]);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      const res = await fetch("/api/get-tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTaskInfo),
+      });
+
+      const data = await res.json();
+
+      if ((!data) || (data.error)) {
+        console.log("Something went wrong fetching existing tasks");
+      } else {
+        setTaskList(data.results);
+        console.log(taskList);
+      }
+    }
+
+    if (!api_call) return;
+    fetchTasks();
+    setApiCall(false);
+  }, [api_call]);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-200 to-blue-500">
+      {/* sticky top-0 */}
+      <div className="flex justify-around w-full bg-white rounded-xl shadow-lg py-8 flex-row">
+        <div className="flex justify-around text-gray-800">
+          <p>ID: {id}</p>
+        </div>
+        <div className="flex justify-center">
+          <h2 className="text-4xl font-bold text-center text-gray-800">
+            Welcome {username}
+          </h2>
+        </div>
+        <div className="flex justify-center">
+          <button onClick={() => {
+                setModelClicked((prevState) => ({
+                  ...prevState,
+                  profile: true
+                }));
+              }} className="flex items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100">
+            <UserIcon className="h-5 w-5 text-gray-600" />
+            <span className="text-sm font-medium text-gray-800">Profile</span>
+          </button>
+        </div>
+        {modalClickedObj.profile && (<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div
+            ref={modalRefObj.profile_ref}
+            className="bg-white rounded-lg shadow-lg p-6 w-96"
+          >
+            <h2 className="text-3xl font-bold mb-4 text-gray-800">Profile</h2>
+            <p className="mb-4 text-1xl text-gray-800">Username: {username}</p>
+            <p className="mb-4 text-1xl text-gray-800">User ID: {id}</p>
+            <div className='flex flex-row justify-around'>
+              <button
+                onClick={() => {
+                  router.push('/');
+                }}
+                className="px-2 bg-red-600 text-white rounded hover:bg-red-700 mr-10"
+              >
+                Log Out
+              </button>
+              <button
+                onClick={handleAccountRemove}
+                className="p-2 bg-red-600 text-white rounded hover:bg-red-700 mr-10"
+              >
+                Delete Account
+              </button>
+              <button
+                onClick={() => {
+                  modalRefObj.profile_ref.current.remove();
+                  setModelClicked((prevState) => ({
+                    ...prevState,
+                    profile: false
+                  }));
+                }}
+                className="p-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>)}
+      </div>
+      <div className='flex w-full p-0 flex-row my-5 '>
+        <div className='h-100 bg-white rounded-xl shadow-lg p-5 mr-10 ml-5 text-gray-800'>
+          <p>Coming Soon...</p>
+        </div>
+        <div className='flex items-center justify-center flex-col bg-green-500/25 rounded-xl shadow-lg p-5 min-w-285 mr-5'>
+          <div className='flex justify-center p-1 mb-10'>
+            <button onClick={() => {
+                setModelClicked((prevState) => ({
+                  ...prevState,
+                  new_task: true
+                }));
+              }}
+            className="flex flex-col items-center gap-2 rounded-lg border px-4 py-2 hover:bg-gray-100 bg-white min-w-100">
+              <div className="flex flex-row">
+                <PlusIcon className="h-5 w-10 text-gray-600" />
+                <span className="text-sm font-medium text-gray-800">Add Item</span>
+              </div>
+            </button>
+            {modalClickedObj.new_task && (
+              <form onSubmit={handleAddSubmit} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div
+                  ref={modalRefObj.new_task_ref}
+                  className="bg-white rounded-lg shadow-lg p-6 min-w-200 min-h-125"
+                >
+                  <h2 className="text-3xl font-bold mb-15 text-gray-800">New Task</h2>
+                  <div className="flex flex-row mb-5">
+                    <p className="text-3xl mr-10 text-gray-800">Title: </p>
+                    <input
+                      id="title"
+                      type="text"
+                      placeholder="New Task"
+                      value={newTaskInfo.title}
+                      onChange={(event) => {
+                        setNewTaskInfo((prevState) => ({
+                          ...prevState,
+                          title: event.target.value
+                        }))
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex flex-row mb-5">
+                    <p className="text-3xl mr-10 text-gray-800">Description: </p>
+                    <textarea
+                      id="description"
+                      type="text"
+                      placeholder="Need to check garbage"
+                      value={newTaskInfo.description}
+                      onChange={(event) => {
+                        setNewTaskInfo((prevState) => ({
+                          ...prevState,
+                          description: event.target.value
+                        }))
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex flex-row mb-5">
+                    <p className="text-3xl mr-10 text-gray-800">Supporting Media: </p>
+                    <input
+                      id="media"
+                      type='file'
+                      accept=".png,.jpg,.jpeg,.pdf,.txt,.docx,.pdf"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) {
+                          setNewTaskInfo((prevState) => ({
+                            ...prevState,
+                            media: file
+                          }));
+                        }
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex flex-row mb-15">
+                    <p className="text-3xl mr-10 text-gray-800">Deadline: </p>
+                    <input
+                      id="time_to_complete"
+                      type="datetime-local"
+                      onChange={(event) => {
+                        setNewTaskInfo((prevState) => ({
+                          ...prevState,
+                          time_to_complete: event.target.value
+                        }))
+                      }}
+                      className="w-100 rounded-lg border border-gray-300 px-4 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      modalRefObj.new_task_ref.current.remove();
+                      setModelClicked((prevState) => ({
+                        ...prevState,
+                        new_task: false
+                      }));
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type='submit'
+                    className="px-4 py-2 ml-10 bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+          {taskList && taskList.map((task, idx) => (
+            <div key={idx} className='flex flex-col justify-center bg-blue-200 rounded-xl shadow-lg p-5 w-200 mb-5'>
+              <div className='text-3xl p-6 bg-blue-300'>
+                <h1 className='font-bold text-gray-800'>Task {(idx + 1)}: {task.title}</h1>
+              </div>
+              <div className='text-1xl p-6 bg-blue-400'>
+                <p className="text-gray-800">Description</p>
+                <p className="text-gray-800">{task.description}</p>
+              </div>
+              {(task.media !== 'N/A') && <PreviewModal task={task} />}
+              <div className='flex flex-row text-2xl p-6 bg-black justify-around'>
+                <p className='text-white'>Task ID: {task.task_id}</p>
+                <div className="flex justify-center">
+                  <button onClick={(event) => {
+                    event.preventDefault();
+                    handleRemoveSubmit(task.task_id);
+                  }} className="flex items-center bg-white gap-2 rounded-lg border px-4 py-2 hover:bg-gray-300">
+                    <MinusIcon className="h-5 w-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-800">Remove</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// EOF

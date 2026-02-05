@@ -1,0 +1,86 @@
+
+networks:
+  backend-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+  frontend-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+
+services:
+  cassandra:
+    image: cassandra:5.0
+    container_name: falcontodo-db
+    restart: unless-stopped
+
+    networks:
+      backend-net:
+        ipv4_address: 192.168.0.10
+
+    environment:
+      # VERY IMPORTANT — JVM limits
+      MAX_HEAP_SIZE: 384M
+      CASSANDRA_CONCURRENT_READS: 2
+      CASSANDRA_CONCURRENT_WRITES: 2
+      CASSANDRA_CONCURRENT_COMPACTORS: 1
+
+      # Reduce JMX & metrics noise
+      JVM_OPTS: "-Dcassandra.skip_wait_for_gossip_to_settle=0"
+
+      # Others
+      
+      CASSANDRA_START_RPC: "true"       # default
+      CASSANDRA_RPC_ADDRESS: "0.0.0.0"  # default
+      CASSANDRA_LISTEN_ADDRESS: "auto"  # default, use IP addr of container # : " CASSANDRA_BROADCAST_ADDRESS
+      CASSANDRA_CLUSTER_NAME: "dev-cluster"
+      CASSANDRA_ENDPOINT_SNITCH: "GossipingPropertyFileSnitch"
+      CASSANDRA_DC: "datacenter1"
+
+    volumes:
+      - ./data.cql:/docker-entrypoint-initdb.d/data.cql:ro
+      - ./cassandra.yaml:/etc/cassandra/cassandra.yaml
+      - cassandra-data:/var/lib/cassandra
+
+    command:
+      - bash
+      - -c
+      - |
+        # Start Cassandra in the background
+        docker-entrypoint.sh cassandra -f &
+        # Wait for Cassandra to be ready
+        until cqlsh -e "describe keyspaces"; do
+          echo "Waiting for Cassandra to be ready..."
+          sleep 5
+        done
+        # Execute the CQL script to initialize the database
+        cqlsh -f /docker-entrypoint-initdb.d/data.cql
+        # Keep the container running
+        wait 
+
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+  web:
+    container_name: falcontodo-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      backend-net:
+        ipv4_address: 192.168.0.11
+      frontend-net:
+        ipv4_address: 192.168.1.11
+    ports:
+      - "8080:3000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /www/falcontodo/*
+volumes:
+  cassandra-data:
