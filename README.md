@@ -16,13 +16,13 @@ The infrastructure of the project is set up in a way that is as isolated as poss
 
 There are two containers present; One contains the web service *(None.js)* and the other contains the database service *(Apache Cassandra)*
 
- - Run `docker compose watch` to initiate it.  It may take a few minutes and output is verbose, so you'll be ale to tell when it is done
-
- - You'll have to *manually* run the following command to populate the database with the provide schema **(data.cql)**: `docker compose exec cassandra cqlsh -f /docker-entrypoint-initdb.d/data.cql`
+ - Run `docker compose up` to initiate it.  It may take a few minutes and output is verbose, so you'll be ale to tell when it is done; If you need to clean the build, run `docker compose down -v`
 
  - The database at this point should be fully functional and the web service will be available at `http://localhost:8080`
 
 ## How to Build and Run - Windows
+
+*TBD*
 
 ## Recap
 
