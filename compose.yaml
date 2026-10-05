@@ -4,7 +4,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.0.0/24
+        - subnet: 192.168.2.0/24
   frontend-net:
     driver: bridge
     ipam:
@@ -19,7 +19,7 @@ services:
 
     networks:
       backend-net:
-        ipv4_address: 192.168.0.10
+        ipv4_address: 192.168.2.10
 
     environment:
       # VERY IMPORTANT — JVM limits
@@ -72,7 +72,7 @@ services:
       dockerfile: Dockerfile
     networks:
       backend-net:
-        ipv4_address: 192.168.0.11
+        ipv4_address: 192.168.2.11
       frontend-net:
         ipv4_address: 192.168.1.11
     ports:
