@@ -6,7 +6,7 @@ Open source full stack TODO tracker written in Javascript using the React framew
 
 Only Docker and Docker Compose is needed
 
- - For Linux - `sudo apt-get install docker-io docker-compose-plugin -yq`
+ - For Linux - `sudo apt-get install docker.io -yq`
 
  - For Windows - *TBD*
 
