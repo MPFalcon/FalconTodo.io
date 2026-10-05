@@ -19,10 +19,12 @@ COPY www/falcontodo .
 # Expose the port your app runs on
 EXPOSE 3000
 
+# Environment variables
+ENV HOST='0.0.0.0'
+
 # Start application
 CMD ["npm", "run", "dev"]
 
 # Next project "QR Code Generator"
 
 # EOF
-
