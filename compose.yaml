@@ -9,7 +9,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 0.0.0.0/0
+        - subnet: 192.168.1.0/24
 
 services:
   cassandra:
@@ -74,7 +74,7 @@ services:
       backend-net:
         ipv4_address: 192.168.0.11
       frontend-net:
-        ipv4_address: 0.0.0.0
+        ipv4_address: 192.168.1.11
     ports:
       - "3000:3000"
     develop:
